@@ -1,0 +1,47 @@
+import os
+import PyPDF2
+
+
+def search_word_in_pdf(file_path, search_word):
+    try:
+        with open(file_path, 'rb') as file:
+            reader = PyPDF2.PdfReader(file)
+            results = []
+            for page_num, page in enumerate(reader.pages):
+                text = page.extract_text()
+                if text and search_word.lower() in text.lower():
+                    results.append(page_num + 1)  # أرقام الصفحات تبدأ من 1 للمستخدمين
+            return results
+    except Exception as e:
+        print(f"Error processing file {file_path}: {e}")
+        return []
+
+
+def search_in_folder(folder_path, search_word):
+    pdf_files = [f for f in os.listdir(folder_path) if f.endswith('.pdf')]
+    results = {}
+
+    for pdf_file in pdf_files:
+        file_path = os.path.join(folder_path, pdf_file)
+        page_numbers = search_word_in_pdf(file_path, search_word)
+        if page_numbers:
+            results[pdf_file] = page_numbers
+
+    return results
+
+
+# طلب إدخال المسار من المستخدم
+folder_path = input('Please enter the path to the folder containing PDF files: ')
+
+# طلب إدخال الكلمة من المستخدم
+search_word = input('Please enter the word to search for: ')
+
+# البحث في المجلد
+results = search_in_folder(folder_path, search_word)
+
+# عرض النتائج
+if results:
+    for pdf_file, pages in results.items():
+        print(f'Word "{search_word}" found in {pdf_file} on pages: {", ".join(map(str, pages))}')
+else:
+    print(f'Word "{search_word}" not found in any PDF files.')
